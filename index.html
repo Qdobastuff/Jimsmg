@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMG Store Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 15px 10px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 15px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+
+        .header .date {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .input-section {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            max-width: 1400px;
+            margin: 0 auto 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .store-inputs {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .store-input-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 12px;
+            border: 2px solid #e0e0e0;
+        }
+
+        .store-input-card h3 {
+            color: #667eea;
+            margin-bottom: 12px;
+            font-size: 16px;
+        }
+
+        .input-group {
+            margin-bottom: 10px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 4px;
+            color: #555;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 8px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .generate-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .generate-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .dashboard {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: none;
+            transform: scale(0.8);
+            transform-origin: top center;
+        }
+
+        .dashboard.show {
+            display: block;
+        }
+
+        .stores-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            max-width: 1000px;
+        }
+
+        .store-card {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .store-header {
+            text-align: center;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .store-name {
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .current-stats {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 12px 10px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .b2b-stats {
+            color: white;
+            padding: 10px 8px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .b2b-stats.green {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        }
+
+        .b2b-stats.yellow {
+            background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
+        }
+
+        .b2b-stats.red {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        }
+
+        .stat-label {
+            font-size: 10px;
+            opacity: 0.9;
+            margin-bottom: 3px;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: bold;
+            line-height: 1;
+            margin-bottom: 4px;
+        }
+
+        .stat-subtext {
+            font-size: 10px;
+            opacity: 0.9;
+        }
+
+        .survey-count-display {
+            background: #f8f9fa;
+            padding: 6px;
+            border-radius: 6px;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 11px;
+            color: #555;
+        }
+
+        .survey-count-display strong {
+            color: #667eea;
+            font-size: 13px;
+        }
+
+        .targets-section h4 {
+            color: #333;
+            margin-bottom: 6px;
+            font-size: 12px;
+        }
+
+        .b2b-targets h4 {
+            color: #333;
+            margin-bottom: 6px;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+
+        .target-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 10px;
+            background: #f8f9fa;
+            border-left: 3px solid #667eea;
+            border-radius: 6px;
+            margin-bottom: 5px;
+        }
+
+        .target-row.achieved {
+            background: #d4edda;
+            border-left-color: #28a745;
+        }
+
+        .target-percent {
+            font-weight: 600;
+            font-size: 12px;
+            color: #333;
+        }
+
+        .target-need {
+            font-weight: bold;
+            color: #667eea;
+            font-size: 12px;
+        }
+
+        .target-row.achieved .target-need {
+            color: #28a745;
+        }
+
+        @media print {
+            body {
+                background: white;
+            }
+            .input-section {
+                display: none;
+            }
+            .dashboard {
+                display: block !important;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .stores-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📊 SMG Store Dashboard</h1>
+        <div class="date" id="currentDate"></div>
+    </div>
+
+    <div class="input-section">
+        <div class="store-inputs">
+            <div class="store-input-card">
+                <h3>#2444 Richmond</h3>
+                <div class="input-group">
+                    <label>Survey Count</label>
+                    <input type="number" id="store1Count" placeholder="e.g., 100" min="0">
+                </div>
+                <div class="input-group">
+                    <label>Current Score (%)</label>
+                    <input type="number" id="store1Percent" placeholder="e.g., 80" min="0" max="100" step="0.1">
+                </div>
+                <div class="input-group">
+                    <label>B2B Score (%)</label>
+                    <input type="number" id="store1B2B" placeholder="e.g., 3.5" min="0" max="100" step="0.1">
+                </div>
+            </div>
+
+            <div class="store-input-card">
+                <h3>#2524 Palomar</h3>
+                <div class="input-group">
+                    <label>Survey Count</label>
+                    <input type="number" id="store2Count" placeholder="e.g., 100" min="0">
+                </div>
+                <div class="input-group">
+                    <label>Current Score (%)</label>
+                    <input type="number" id="store2Percent" placeholder="e.g., 80" min="0" max="100" step="0.1">
+                </div>
+                <div class="input-group">
+                    <label>B2B Score (%)</label>
+                    <input type="number" id="store2B2B" placeholder="e.g., 3.5" min="0" max="100" step="0.1">
+                </div>
+            </div>
+
+            <div class="store-input-card">
+                <h3>#2842 Georgetown</h3>
+                <div class="input-group">
+                    <label>Survey Count</label>
+                    <input type="number" id="store3Count" placeholder="e.g., 100" min="0">
+                </div>
+                <div class="input-group">
+                    <label>Current Score (%)</label>
+                    <input type="number" id="store3Percent" placeholder="e.g., 80" min="0" max="100" step="0.1">
+                </div>
+                <div class="input-group">
+                    <label>B2B Score (%)</label>
+                    <input type="number" id="store3B2B" placeholder="e.g., 3.5" min="0" max="100" step="0.1">
+                </div>
+            </div>
+
+            <div class="store-input-card">
+                <h3>#3286 Danville</h3>
+                <div class="input-group">
+                    <label>Survey Count</label>
+                    <input type="number" id="store4Count" placeholder="e.g., 100" min="0">
+                </div>
+                <div class="input-group">
+                    <label>Current Score (%)</label>
+                    <input type="number" id="store4Percent" placeholder="e.g., 80" min="0" max="100" step="0.1">
+                </div>
+                <div class="input-group">
+                    <label>B2B Score (%)</label>
+                    <input type="number" id="store4B2B" placeholder="e.g., 3.5" min="0" max="100" step="0.1">
+                </div>
+            </div>
+        </div>
+
+        <button class="generate-btn" onclick="generateDashboard()">Generate Dashboard</button>
+    </div>
+
+    <div class="dashboard" id="dashboard">
+        <div class="stores-grid" id="storesGrid"></div>
+    </div>
+
+    <script>
+        // Display current date
+        const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-US', dateOptions);
+
+        function generateDashboard() {
+            const storesGrid = document.getElementById('storesGrid');
+            storesGrid.innerHTML = '';
+
+            const targets = [70, 76, 80, 85, 90];
+
+            const storeNames = ['#2444 Richmond', '#2524 Palomar', '#2842 Georgetown', '#3286 Danville'];
+
+            for (let i = 1; i <= 4; i++) {
+                const storeName = storeNames[i - 1];
+                const surveyCount = parseFloat(document.getElementById(`store${i}Count`).value);
+                const currentPercent = parseFloat(document.getElementById(`store${i}Percent`).value);
+                const b2bPercent = parseFloat(document.getElementById(`store${i}B2B`).value);
+
+                if (isNaN(surveyCount) || isNaN(currentPercent) || isNaN(b2bPercent)) continue;
+
+                const current5Stars = Math.round((currentPercent / 100) * surveyCount);
+                const currentB2BCount = Math.round((b2bPercent / 100) * surveyCount);
+
+                // Determine B2B zone
+                let b2bClass = '';
+                let b2bZoneText = '';
+                if (b2bPercent < 5) {
+                    b2bClass = 'green';
+                    b2bZoneText = '✅ Money Zone';
+                } else if (b2bPercent >= 5 && b2bPercent <= 10) {
+                    b2bClass = 'yellow';
+                    b2bZoneText = '⚠️ Safe Zone';
+                } else {
+                    b2bClass = 'red';
+                    b2bZoneText = '❌ Red Zone';
+                }
+
+                const storeCard = document.createElement('div');
+                storeCard.className = 'store-card';
+
+                // Calculate satisfaction targets
+                let targetsHTML = '';
+                targets.forEach(target => {
+                    const isAchieved = currentPercent >= target;
+                    const needed = isAchieved ? 0 : Math.ceil((target * surveyCount - 100 * current5Stars) / (100 - target));
+
+                    targetsHTML += `
+                        <div class="target-row ${isAchieved ? 'achieved' : ''}">
+                            <span class="target-percent">${target}%</span>
+                            <span class="target-need">${isAchieved ? '✓ Achieved' : `${needed} more needed`}</span>
+                        </div>
+                    `;
+                });
+
+                // Calculate B2B targets
+                let b2bTargetsHTML = '';
+                
+                // Determine next threshold and calculate
+                if (b2bPercent < 5) {
+                    // Currently in Money Zone (Green)
+                    // To hit 5%: (currentB2BCount + newB2B) / (surveyCount + newB2B) = 0.05
+                    // Solving: currentB2BCount + newB2B = 0.05 * (surveyCount + newB2B)
+                    //          currentB2BCount + newB2B = 0.05 * surveyCount + 0.05 * newB2B
+                    //          newB2B - 0.05 * newB2B = 0.05 * surveyCount - currentB2BCount
+                    //          0.95 * newB2B = 0.05 * surveyCount - currentB2BCount
+                    //          newB2B = (0.05 * surveyCount - currentB2BCount) / 0.95
+                    const b2bToHit5 = Math.ceil((0.05 * surveyCount - currentB2BCount) / 0.95);
+                    
+                    b2bTargetsHTML += `
+                        <div class="target-row achieved">
+                            <span class="target-percent">Stay Green (&lt;5%)</span>
+                            <span class="target-need">✓ Current</span>
+                        </div>
+                    `;
+                    if (b2bToHit5 > 0) {
+                        b2bTargetsHTML += `
+                            <div class="target-row">
+                                <span class="target-percent">Hit Yellow (5%)</span>
+                                <span class="target-need">${b2bToHit5} more B2B</span>
+                            </div>
+                        `;
+                    }
+                } else if (b2bPercent >= 5 && b2bPercent < 10) {
+                    // Currently in Safe Zone (Yellow)
+                    // To get below 5%: currentB2BCount / (surveyCount + goodSurveys) < 0.05
+                    // Solving: currentB2BCount < 0.05 * (surveyCount + goodSurveys)
+                    //          currentB2BCount < 0.05 * surveyCount + 0.05 * goodSurveys
+                    //          currentB2BCount - 0.05 * surveyCount < 0.05 * goodSurveys
+                    //          goodSurveys > (currentB2BCount - 0.05 * surveyCount) / 0.05
+                    const goodSurveysTo5 = Math.ceil((currentB2BCount - 0.05 * surveyCount) / 0.05);
+                    
+                    // To hit 10%: (currentB2BCount + newB2B) / (surveyCount + newB2B) = 0.10
+                    // Solving: 0.90 * newB2B = 0.10 * surveyCount - currentB2BCount
+                    const b2bToHit10 = Math.ceil((0.10 * surveyCount - currentB2BCount) / 0.90);
+                    
+                    b2bTargetsHTML += `
+                        <div class="target-row">
+                            <span class="target-percent">Get to Green (&lt;5%)</span>
+                            <span class="target-need">${goodSurveysTo5 > 0 ? goodSurveysTo5 : 0} good surveys</span>
+                        </div>
+                    `;
+                    b2bTargetsHTML += `
+                        <div class="target-row achieved">
+                            <span class="target-percent">Stay Yellow (5-10%)</span>
+                            <span class="target-need">✓ Current</span>
+                        </div>
+                    `;
+                    if (b2bToHit10 > 0) {
+                        b2bTargetsHTML += `
+                            <div class="target-row">
+                                <span class="target-percent">Hit Red (10%)</span>
+                                <span class="target-need">${b2bToHit10} more B2B</span>
+                            </div>
+                        `;
+                    }
+                } else {
+                    // Currently in Red Zone
+                    // To get below 10%: currentB2BCount / (surveyCount + goodSurveys) < 0.10
+                    // Solving: goodSurveys > (currentB2BCount - 0.10 * surveyCount) / 0.10
+                    const goodSurveysTo10 = Math.ceil((currentB2BCount - 0.10 * surveyCount) / 0.10);
+                    
+                    // To get below 5%: currentB2BCount / (surveyCount + goodSurveys) < 0.05
+                    // Solving: goodSurveys > (currentB2BCount - 0.05 * surveyCount) / 0.05
+                    const goodSurveysTo5 = Math.ceil((currentB2BCount - 0.05 * surveyCount) / 0.05);
+                    
+                    b2bTargetsHTML += `
+                        <div class="target-row">
+                            <span class="target-percent">Get to Yellow (&lt;10%)</span>
+                            <span class="target-need">${goodSurveysTo10 > 0 ? goodSurveysTo10 : 0} good surveys</span>
+                        </div>
+                    `;
+                    b2bTargetsHTML += `
+                        <div class="target-row">
+                            <span class="target-percent">Get to Green (&lt;5%)</span>
+                            <span class="target-need">${goodSurveysTo5 > 0 ? goodSurveysTo5 : 0} good surveys</span>
+                        </div>
+                    `;
+                    b2bTargetsHTML += `
+                        <div class="target-row">
+                            <span class="target-percent">Currently Red (&gt;10%)</span>
+                            <span class="target-need">⚠️ Bonus deduction</span>
+                        </div>
+                    `;
+                }
+
+                storeCard.innerHTML = `
+                    <div class="store-header">
+                        <div class="store-name">${storeName}</div>
+                    </div>
+
+                    <div class="current-stats">
+                        <div class="stat-label">Overall Satisfaction</div>
+                        <div class="stat-value">${currentPercent.toFixed(1)}%</div>
+                        <div class="stat-subtext">${current5Stars} five-star surveys</div>
+                    </div>
+
+                    <div class="b2b-stats ${b2bClass}">
+                        <div class="stat-label">B2B Score</div>
+                        <div class="stat-value">${b2bPercent.toFixed(1)}%</div>
+                        <div class="stat-subtext">${b2bZoneText}</div>
+                    </div>
+
+                    <div class="survey-count-display">
+                        Total Surveys: <strong>${surveyCount}</strong>
+                    </div>
+
+                    <div class="targets-section">
+                        <h4>Surveys Needed to Reach:</h4>
+                        ${targetsHTML}
+                    </div>
+
+                    <div class="b2b-targets">
+                        <h4>B2B Targets:</h4>
+                        ${b2bTargetsHTML}
+                    </div>
+                `;
+
+                storesGrid.appendChild(storeCard);
+            }
+
+            document.getElementById('dashboard').classList.add('show');
+            
+            // Scroll to dashboard
+            setTimeout(() => {
+                document.getElementById('dashboard').scrollIntoView({ behavior: 'smooth' });
+            }, 100);
+        }
+
+        // Allow Enter key
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                generateDashboard();
+            }
+        });
+    </script>
+</body>
+</html>
