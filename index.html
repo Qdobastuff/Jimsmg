@@ -145,7 +145,6 @@
         }
 
         .current-stats {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
             color: white;
             padding: 12px 10px;
             border-radius: 10px;
@@ -171,6 +170,28 @@
 
         .b2b-stats.red {
             background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        }
+
+        .b2b-stats.black {
+            background: linear-gradient(135deg, #2c3e50 0%, #1a252f 100%);
+            color: #ff4444;
+        }
+
+        .current-stats.green {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        }
+
+        .current-stats.yellow {
+            background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
+        }
+
+        .current-stats.red {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        }
+
+        .current-stats.black {
+            background: linear-gradient(135deg, #2c3e50 0%, #1a252f 100%);
+            color: #ff4444;
         }
 
         .stat-label {
@@ -359,7 +380,7 @@
             const storesGrid = document.getElementById('storesGrid');
             storesGrid.innerHTML = '';
 
-            const targets = [70, 76, 80, 85, 90];
+            const targets = [75, 80, 85, 90];
 
             const storeNames = ['#2444 Richmond', '#2524 Palomar', '#2842 Georgetown', '#3286 Danville'];
 
@@ -374,18 +395,40 @@
                 const current5Stars = Math.round((currentPercent / 100) * surveyCount);
                 const currentB2BCount = Math.round((b2bPercent / 100) * surveyCount);
 
-                // Determine B2B zone
+                // Determine satisfaction color class and impact
+                let satClass = '';
+                let satImpact = '';
+                if (currentPercent >= 85) {
+                    satClass = 'green';
+                    satImpact = '💰 +1% Net Profit Bonus';
+                } else if (currentPercent >= 75) {
+                    satClass = 'yellow';
+                    satImpact = '➡️ Safe — No Impact on Net Profit';
+                } else {
+                    satClass = 'black';
+                    satImpact = '📉 -1% Net Profit';
+                }
+
+                // Determine B2B zone, color, and impact
                 let b2bClass = '';
                 let b2bZoneText = '';
-                if (b2bPercent < 5) {
+                let b2bImpact = '';
+                if (b2bPercent < 3) {
                     b2bClass = 'green';
-                    b2bZoneText = '✅ Money Zone';
-                } else if (b2bPercent >= 5 && b2bPercent <= 10) {
+                    b2bZoneText = '✅ Money Zone — Under 3%';
+                    b2bImpact = '💰 +$250 USD Bonus';
+                } else if (b2bPercent >= 3 && b2bPercent < 5) {
                     b2bClass = 'yellow';
-                    b2bZoneText = '⚠️ Safe Zone';
-                } else {
+                    b2bZoneText = '✅ Safe Zone — 3–5%';
+                    b2bImpact = '➡️ Safe — No Dollar Impact';
+                } else if (b2bPercent >= 5 && b2bPercent < 7) {
                     b2bClass = 'red';
-                    b2bZoneText = '❌ Red Zone';
+                    b2bZoneText = '⚠️ Outlier Call Territory — 5–7%';
+                    b2bImpact = '⚠️ No Dollar Impact (Outlier Call Required)';
+                } else {
+                    b2bClass = 'black';
+                    b2bZoneText = '❌ Costs You Money — Above 7%';
+                    b2bImpact = '📉 -$250 USD Deduction';
                 }
 
                 const storeCard = document.createElement('div');
@@ -408,90 +451,87 @@
                 // Calculate B2B targets
                 let b2bTargetsHTML = '';
                 
-                // Determine next threshold and calculate
-                if (b2bPercent < 5) {
-                    // Currently in Money Zone (Green)
-                    // To hit 5%: (currentB2BCount + newB2B) / (surveyCount + newB2B) = 0.05
-                    // Solving: currentB2BCount + newB2B = 0.05 * (surveyCount + newB2B)
-                    //          currentB2BCount + newB2B = 0.05 * surveyCount + 0.05 * newB2B
-                    //          newB2B - 0.05 * newB2B = 0.05 * surveyCount - currentB2BCount
-                    //          0.95 * newB2B = 0.05 * surveyCount - currentB2BCount
-                    //          newB2B = (0.05 * surveyCount - currentB2BCount) / 0.95
+                if (b2bPercent < 3) {
+                    // Money Zone
+                    const b2bToHit3 = Math.ceil((0.03 * surveyCount - currentB2BCount) / 0.97);
+                    b2bTargetsHTML += `
+                        <div class="target-row achieved">
+                            <span class="target-percent">✅ Money Zone (&lt;3%)</span>
+                            <span class="target-need">✓ Current</span>
+                        </div>
+                    `;
+                    if (b2bToHit3 > 0) b2bTargetsHTML += `
+                        <div class="target-row">
+                            <span class="target-percent">Hit Safe Zone (3%)</span>
+                            <span class="target-need">${b2bToHit3} more B2B</span>
+                        </div>
+                    `;
+                } else if (b2bPercent >= 3 && b2bPercent < 5) {
+                    // Safe Zone
+                    const goodSurveysTo3 = Math.ceil((currentB2BCount - 0.03 * surveyCount) / 0.03);
                     const b2bToHit5 = Math.ceil((0.05 * surveyCount - currentB2BCount) / 0.95);
-                    
-                    b2bTargetsHTML += `
-                        <div class="target-row achieved">
-                            <span class="target-percent">Stay Green (&lt;5%)</span>
-                            <span class="target-need">✓ Current</span>
-                        </div>
-                    `;
-                    if (b2bToHit5 > 0) {
-                        b2bTargetsHTML += `
-                            <div class="target-row">
-                                <span class="target-percent">Hit Yellow (5%)</span>
-                                <span class="target-need">${b2bToHit5} more B2B</span>
-                            </div>
-                        `;
-                    }
-                } else if (b2bPercent >= 5 && b2bPercent < 10) {
-                    // Currently in Safe Zone (Yellow)
-                    // To get below 5%: currentB2BCount / (surveyCount + goodSurveys) < 0.05
-                    // Solving: currentB2BCount < 0.05 * (surveyCount + goodSurveys)
-                    //          currentB2BCount < 0.05 * surveyCount + 0.05 * goodSurveys
-                    //          currentB2BCount - 0.05 * surveyCount < 0.05 * goodSurveys
-                    //          goodSurveys > (currentB2BCount - 0.05 * surveyCount) / 0.05
-                    const goodSurveysTo5 = Math.ceil((currentB2BCount - 0.05 * surveyCount) / 0.05);
-                    
-                    // To hit 10%: (currentB2BCount + newB2B) / (surveyCount + newB2B) = 0.10
-                    // Solving: 0.90 * newB2B = 0.10 * surveyCount - currentB2BCount
-                    const b2bToHit10 = Math.ceil((0.10 * surveyCount - currentB2BCount) / 0.90);
-                    
                     b2bTargetsHTML += `
                         <div class="target-row">
-                            <span class="target-percent">Get to Green (&lt;5%)</span>
-                            <span class="target-need">${goodSurveysTo5 > 0 ? goodSurveysTo5 : 0} good surveys</span>
+                            <span class="target-percent">Get to Money Zone (&lt;3%)</span>
+                            <span class="target-need">${goodSurveysTo3 > 0 ? goodSurveysTo3 : 0} good surveys</span>
                         </div>
-                    `;
-                    b2bTargetsHTML += `
                         <div class="target-row achieved">
-                            <span class="target-percent">Stay Yellow (5-10%)</span>
+                            <span class="target-percent">✅ Safe Zone (3–5%)</span>
                             <span class="target-need">✓ Current</span>
                         </div>
                     `;
-                    if (b2bToHit10 > 0) {
-                        b2bTargetsHTML += `
-                            <div class="target-row">
-                                <span class="target-percent">Hit Red (10%)</span>
-                                <span class="target-need">${b2bToHit10} more B2B</span>
-                            </div>
-                        `;
-                    }
+                    if (b2bToHit5 > 0) b2bTargetsHTML += `
+                        <div class="target-row">
+                            <span class="target-percent">Hit Outlier Zone (5%)</span>
+                            <span class="target-need">${b2bToHit5} more B2B</span>
+                        </div>
+                    `;
+                } else if (b2bPercent >= 5 && b2bPercent < 7) {
+                    // Outlier Call Territory
+                    const goodSurveysTo5 = Math.ceil((currentB2BCount - 0.05 * surveyCount) / 0.05);
+                    const goodSurveysTo3 = Math.ceil((currentB2BCount - 0.03 * surveyCount) / 0.03);
+                    const b2bToHit7 = Math.ceil((0.07 * surveyCount - currentB2BCount) / 0.93);
+                    b2bTargetsHTML += `
+                        <div class="target-row">
+                            <span class="target-percent">Get to Money Zone (&lt;3%)</span>
+                            <span class="target-need">${goodSurveysTo3 > 0 ? goodSurveysTo3 : 0} good surveys</span>
+                        </div>
+                        <div class="target-row">
+                            <span class="target-percent">Get to Safe Zone (&lt;5%)</span>
+                            <span class="target-need">${goodSurveysTo5 > 0 ? goodSurveysTo5 : 0} good surveys</span>
+                        </div>
+                        <div class="target-row achieved">
+                            <span class="target-percent">⚠️ Outlier Territory (5–7%)</span>
+                            <span class="target-need">✓ Current</span>
+                        </div>
+                    `;
+                    if (b2bToHit7 > 0) b2bTargetsHTML += `
+                        <div class="target-row">
+                            <span class="target-percent">Hit Deduction Zone (7%)</span>
+                            <span class="target-need">${b2bToHit7} more B2B</span>
+                        </div>
+                    `;
                 } else {
-                    // Currently in Red Zone
-                    // To get below 10%: currentB2BCount / (surveyCount + goodSurveys) < 0.10
-                    // Solving: goodSurveys > (currentB2BCount - 0.10 * surveyCount) / 0.10
-                    const goodSurveysTo10 = Math.ceil((currentB2BCount - 0.10 * surveyCount) / 0.10);
-                    
-                    // To get below 5%: currentB2BCount / (surveyCount + goodSurveys) < 0.05
-                    // Solving: goodSurveys > (currentB2BCount - 0.05 * surveyCount) / 0.05
+                    // Costs You Money Zone
+                    const goodSurveysTo7 = Math.ceil((currentB2BCount - 0.07 * surveyCount) / 0.07);
                     const goodSurveysTo5 = Math.ceil((currentB2BCount - 0.05 * surveyCount) / 0.05);
-                    
+                    const goodSurveysTo3 = Math.ceil((currentB2BCount - 0.03 * surveyCount) / 0.03);
                     b2bTargetsHTML += `
                         <div class="target-row">
-                            <span class="target-percent">Get to Yellow (&lt;10%)</span>
-                            <span class="target-need">${goodSurveysTo10 > 0 ? goodSurveysTo10 : 0} good surveys</span>
+                            <span class="target-percent">Get to Money Zone (&lt;3%)</span>
+                            <span class="target-need">${goodSurveysTo3 > 0 ? goodSurveysTo3 : 0} good surveys</span>
                         </div>
-                    `;
-                    b2bTargetsHTML += `
                         <div class="target-row">
-                            <span class="target-percent">Get to Green (&lt;5%)</span>
+                            <span class="target-percent">Get to Safe Zone (&lt;5%)</span>
                             <span class="target-need">${goodSurveysTo5 > 0 ? goodSurveysTo5 : 0} good surveys</span>
                         </div>
-                    `;
-                    b2bTargetsHTML += `
                         <div class="target-row">
-                            <span class="target-percent">Currently Red (&gt;10%)</span>
-                            <span class="target-need">⚠️ Bonus deduction</span>
+                            <span class="target-percent">Get out of Deduction (&lt;7%)</span>
+                            <span class="target-need">${goodSurveysTo7 > 0 ? goodSurveysTo7 : 0} good surveys</span>
+                        </div>
+                        <div class="target-row" style="border-left-color:#dc3545;">
+                            <span class="target-percent">❌ Costs You Money (&gt;7%)</span>
+                            <span class="target-need" style="color:#dc3545;">⚠️ -$250 deduction</span>
                         </div>
                     `;
                 }
@@ -501,16 +541,18 @@
                         <div class="store-name">${storeName}</div>
                     </div>
 
-                    <div class="current-stats">
+                    <div class="current-stats ${satClass}">
                         <div class="stat-label">Overall Satisfaction</div>
                         <div class="stat-value">${currentPercent.toFixed(1)}%</div>
                         <div class="stat-subtext">${current5Stars} five-star surveys</div>
+                        <div style="margin-top:6px; font-size:12px; font-weight:700; opacity:0.95;">${satImpact}</div>
                     </div>
 
                     <div class="b2b-stats ${b2bClass}">
                         <div class="stat-label">B2B Score</div>
                         <div class="stat-value">${b2bPercent.toFixed(1)}%</div>
                         <div class="stat-subtext">${b2bZoneText}</div>
+                        <div style="margin-top:6px; font-size:12px; font-weight:700; opacity:0.95;">${b2bImpact}</div>
                     </div>
 
                     <div class="survey-count-display">
